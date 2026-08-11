@@ -54,7 +54,13 @@ export default function Stage({
         >
           {scene === 0 && <SceneIdle />}
           {scene === 1 && <Scene1Entrada active nome={answers.nome} />}
-          {scene === 2 && <Scene2Qualifica active faturamento={answers.faturamento} />}
+          {scene === 2 && (
+            <Scene2Qualifica
+              active
+              faturamento={answers.faturamento}
+              empresa={answers.empresa}
+            />
+          )}
           {scene === 3 && <Scene3Nutre active dor={answers.dor} />}
           {scene === 4 && <Scene4Case active />}
           {scene === 5 && (

@@ -80,6 +80,7 @@ export async function sendLead(answers: Answers, stage: SubmitStage) {
     submittedAt: new Date().toISOString(),
 
     nome: answers.nome.trim(),
+    empresa: answers.empresa.trim(),
     whatsapp: toE164(answers.whatsapp),
     whatsappFormatado: answers.whatsapp,
 

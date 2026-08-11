@@ -52,18 +52,19 @@ export default function App() {
   const scene = desfecho > 0 ? desfecho : concluido || enviando ? 5 : step
 
   const nomeOk = isValidName(answers.nome)
+  const empresaOk = answers.empresa.trim().length >= 2
   const foneOk = isValidPhone(answers.whatsapp)
 
   const avancarStep0 = useCallback(() => {
     setTentouStep0(true)
-    if (!nomeOk || !foneOk) return
+    if (!nomeOk || !empresaOk || !foneOk) return
     setStep(1)
     // Lead parcial: garante que quem abandonar no meio ainda chega no CRM.
     if (!parcialEnviado.current) {
       parcialEnviado.current = true
       void sendLead(answers, 'parcial')
     }
-  }, [answers, nomeOk, foneOk])
+  }, [answers, nomeOk, empresaOk, foneOk])
 
   // Cada escolha destrava a proxima cena sozinha, sem botao no meio do caminho.
   const escolher = (campo: keyof Answers, valor: string, proximo: number) => {
@@ -167,6 +168,7 @@ export default function App() {
                   finalizar={finalizar}
                   tentouStep0={tentouStep0}
                   nomeOk={nomeOk}
+                  empresaOk={empresaOk}
                   foneOk={foneOk}
                   enviando={enviando}
                   erroEnvio={erroEnvio}
@@ -209,6 +211,7 @@ type PassoProps = {
   finalizar: (timing: string) => void
   tentouStep0: boolean
   nomeOk: boolean
+  empresaOk: boolean
   foneOk: boolean
   enviando: boolean
   erroEnvio: boolean
@@ -224,6 +227,7 @@ function Passo({
   finalizar,
   tentouStep0,
   nomeOk,
+  empresaOk,
   foneOk,
   enviando,
   erroEnvio,
@@ -243,7 +247,7 @@ function Passo({
         {/* Nome e WhatsApp continuam juntos: sao um bloco so ("como te chamo e
             onde falo com voce"), e separar adiaria a primeira cena. */}
         <Label hint="É por onde a gente continua a conversa depois">
-          Como você se chama e qual o seu WhatsApp?
+          Seu nome, sua empresa e seu WhatsApp
         </Label>
         <div className="space-y-2">
           <TextField
@@ -252,6 +256,16 @@ function Passo({
             placeholder="Seu nome"
             autoComplete="name"
             invalid={tentouStep0 && !nomeOk}
+            onEnter={avancarStep0}
+          />
+          {/* Funil B2B: sem o nome da empresa o vendedor liga sem saber pra
+              quem esta ligando. */}
+          <TextField
+            value={answers.empresa}
+            onChange={(v) => set('empresa', v)}
+            placeholder="Nome da empresa"
+            autoComplete="organization"
+            invalid={tentouStep0 && !empresaOk}
             onEnter={avancarStep0}
           />
           <TextField
@@ -263,11 +277,13 @@ function Passo({
             invalid={tentouStep0 && !foneOk}
             onEnter={avancarStep0}
           />
-          {tentouStep0 && (!nomeOk || !foneOk) && (
+          {tentouStep0 && (!nomeOk || !empresaOk || !foneOk) && (
             <p className="text-[12px] text-rosa">
               {!nomeOk
                 ? 'Escreve seu nome pra gente continuar'
-                : 'Confere o WhatsApp com DDD, parece incompleto'}
+                : !empresaOk
+                  ? 'Falta o nome da empresa'
+                  : 'Confere o WhatsApp com DDD, parece incompleto'}
             </p>
           )}
         </div>

@@ -120,6 +120,7 @@ export const TIMING_OPTIONS = [
 
 export type Answers = {
   nome: string
+  empresa: string
   whatsapp: string
   faturamento: string
   dor: string
@@ -129,6 +130,7 @@ export type Answers = {
 
 export const EMPTY_ANSWERS: Answers = {
   nome: '',
+  empresa: '',
   whatsapp: '',
   faturamento: '',
   dor: '',

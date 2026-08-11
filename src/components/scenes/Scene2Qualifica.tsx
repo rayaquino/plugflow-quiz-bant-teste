@@ -10,9 +10,11 @@ import { ANNUAL_REVENUE_RANGES } from '@/lib/config'
 export default function Scene2Qualifica({
   active,
   faturamento,
+  empresa,
 }: {
   active: boolean
   faturamento: string
+  empresa: string
 }) {
   const faixa = ANNUAL_REVENUE_RANGES.find((r) => r.value === faturamento)
   const label = faixa?.label ?? ''
@@ -21,7 +23,13 @@ export default function Scene2Qualifica({
   const msgs: Msg[] = [
     {
       from: 'ia',
-      text: 'Antes de te passar preço, deixa eu entender o tamanho da operação. Sua empresa fatura mais ou menos quanto por ano?',
+      // Usa o nome da empresa quando existe: mostra o agente trabalhando com o
+      // dado que a pessoa acabou de dar, em vez de falar generico.
+      // Sem artigo antes do nome: "a"/"o" antes de nome de empresa qualquer e
+      // aposta de genero e sai errado em metade dos casos.
+      text: empresa.trim()
+        ? `Antes de te passar preço, deixa eu entender o tamanho da operação. ${empresa.trim()} fatura mais ou menos quanto por ano?`
+        : 'Antes de te passar preço, deixa eu entender o tamanho da operação. Sua empresa fatura mais ou menos quanto por ano?',
       typing: 800,
     },
     { from: 'lead', text: label, typing: 700, after: 300 },
