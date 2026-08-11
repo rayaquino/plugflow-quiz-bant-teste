@@ -16,19 +16,33 @@ const labelOf = (list: Labeled, value: string) =>
   list.find((o) => o.value === value)?.label ?? ''
 
 /**
- * Modo teste: `?teste=1` na URL.
+ * Modo teste. Liga de duas formas:
  *
- * Existe porque so de preencher os dois primeiros campos o quiz ja dispara o
- * lead 'parcial' de verdade. Sem essa trava, qualquer um que abrisse a pagina
- * pra conferir a animacao criaria contato e task reais, e no fim disparia
- * WhatsApp pro numero que estivesse no campo.
+ *  1. `?teste=1` na URL, pra conferir a tela de proposito;
+ *  2. sozinho, quando a pagina esta dentro de um iframe.
  *
- * Quando ligado, nada sai da maquina e a tela mostra um aviso.
+ * O item 2 nasceu de um incidente real: o preview do editor do Lovable roda
+ * num iframe e NAO carrega a querystring, entao quem abria ali pra "so olhar a
+ * animacao" disparava lead de verdade a cada preenchimento, e o WhatsApp
+ * recebia template atras de template. Preview e lugar de olhar, nao de gerar
+ * lead, entao o padrao seguro passa a ser: dentro de iframe, nao envia.
+ *
+ * A pagina publicada roda em aba propria, fora de iframe, e continua enviando
+ * normalmente. Se um dia o quiz for embutido em iframe de proposito, essa regra
+ * precisa mudar junto.
+ *
+ * Quando ligado, nada sai da maquina, o Pixel nao carrega e a tela avisa.
  */
 export function modoTeste() {
   if (typeof window === 'undefined') return false
   const v = new URLSearchParams(window.location.search).get('teste')
-  return v === '1' || v === 'true'
+  if (v === '1' || v === 'true') return true
+  try {
+    return window.self !== window.top
+  } catch {
+    // Acesso negado ao window.top e sinal de iframe de outra origem.
+    return true
+  }
 }
 
 /**

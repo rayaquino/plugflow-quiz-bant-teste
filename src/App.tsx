@@ -13,6 +13,7 @@ import {
   TIMING_OPTIONS,
   type Answers,
 } from './lib/config'
+import { iniciarPixel, marcarLead } from './lib/pixel'
 import { modoTeste, sendLead } from './lib/submit'
 import { isValidName, isValidPhone, maskPhone } from './lib/utils'
 
@@ -40,6 +41,10 @@ export default function App() {
   // esperando um contato que ninguem sabe que precisa fazer.
   const [erroEnvio, setErroEnvio] = useState(false)
   const parcialEnviado = useRef(false)
+  // Trava de reentrancia. O botao ja fica desabilitado durante o envio, mas
+  // isso e o ultimo anteparo contra dois disparos do 'completo' saindo juntos,
+  // que e o que gera task duplicada e template repetido no WhatsApp.
+  const enviandoRef = useRef(false)
 
   const set = <K extends keyof Answers>(k: K, v: Answers[K]) =>
     setAnswers((a) => ({ ...a, [k]: v }))
@@ -67,11 +72,16 @@ export default function App() {
   }
 
   const finalizar = async (timing: string) => {
+    // Segundo disparo enquanto o primeiro esta no ar: ignora.
+    if (enviandoRef.current || (concluido && !erroEnvio)) return
+    enviandoRef.current = true
+
     set('timing', timing)
     setErroEnvio(false)
     setEnviando(true)
     const r = await sendLead({ ...answers, timing }, 'completo')
     setEnviando(false)
+    enviandoRef.current = false
 
     if (!r.ok) {
       // Botao continua clicavel de proposito. Retentar nao duplica lead: o
@@ -82,7 +92,13 @@ export default function App() {
 
     setVaiReceberWhats(r.whatsappEnviado)
     setConcluido(true)
+    marcarLead()
   }
+
+  // PageView do Pixel, uma vez por carregamento.
+  useEffect(() => {
+    iniciarPixel()
+  }, [])
 
   useEffect(() => {
     if (!concluido) return
@@ -154,6 +170,7 @@ export default function App() {
                   foneOk={foneOk}
                   enviando={enviando}
                   erroEnvio={erroEnvio}
+                  concluido={concluido}
                 />
               )}
             </motion.div>
@@ -195,6 +212,7 @@ type PassoProps = {
   foneOk: boolean
   enviando: boolean
   erroEnvio: boolean
+  concluido: boolean
 }
 
 function Passo({
@@ -209,6 +227,7 @@ function Passo({
   foneOk,
   enviando,
   erroEnvio,
+  concluido,
 }: PassoProps) {
   if (step === 0) {
     return (
@@ -321,7 +340,7 @@ function Passo({
       <div className="mt-3">
         <PrimaryButton
           onClick={() => void finalizar(answers.timing)}
-          disabled={!answers.timing}
+          disabled={!answers.timing || (concluido && !erroEnvio)}
           loading={enviando}
         >
           {erroEnvio ? 'Tentar de novo' : 'Destravar a demo completa'}
