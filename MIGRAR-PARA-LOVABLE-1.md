@@ -1,4 +1,4 @@
-# Migração para o Lovable, parte 1 de 3: base e configuração
+# Migração para o Lovable, parte 1 de 6: base e configuração
 
 Cole isto no chat do projeto Lovable "Orquestrador Inteligente PlugFlow". Aplique as partes em ordem, uma por vez, esperando cada uma terminar.
 

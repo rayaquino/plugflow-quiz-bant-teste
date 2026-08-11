@@ -16,6 +16,22 @@ const labelOf = (list: Labeled, value: string) =>
   list.find((o) => o.value === value)?.label ?? ''
 
 /**
+ * Modo teste: `?teste=1` na URL.
+ *
+ * Existe porque so de preencher os dois primeiros campos o quiz ja dispara o
+ * lead 'parcial' de verdade. Sem essa trava, qualquer um que abrisse a pagina
+ * pra conferir a animacao criaria contato e task reais, e no fim disparia
+ * WhatsApp pro numero que estivesse no campo.
+ *
+ * Quando ligado, nada sai da maquina e a tela mostra um aviso.
+ */
+export function modoTeste() {
+  if (typeof window === 'undefined') return false
+  const v = new URLSearchParams(window.location.search).get('teste')
+  return v === '1' || v === 'true'
+}
+
+/**
  * Manda pro n8n (/webhook/plugflow-quiz-bant).
  *
  * Dispara duas vezes de proposito:
@@ -34,6 +50,14 @@ const labelOf = (list: Labeled, value: string) =>
  */
 export async function sendLead(answers: Answers, stage: SubmitStage) {
   const score = scoreBant(answers)
+
+  // A trava vem ANTES de montar qualquer requisicao: em modo teste nada sai.
+  // Devolve whatsappEnviado true de proposito, pra quem esta validando ver a
+  // tela final completa em vez do caminho pessimista.
+  if (modoTeste()) {
+    console.info('[quiz-bant] modo teste, nada enviado', { stage, score })
+    return { ok: true, status: 0, whatsappEnviado: true }
+  }
 
   const payload = {
     source: 'plugflow-quiz-bant-sdr',
