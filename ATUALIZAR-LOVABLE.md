@@ -1,6 +1,457 @@
-# Atualização: componentes (lote 2 de 2)
+# Atualização: campo empresa, Pixel do Meta, trava de iframe e trava de reenvio
 
 Substitua os arquivos abaixo pelo conteúdo literal, mantendo os caminhos. Não reescreva, não renomeie e não altere nenhum outro arquivo do projeto.
+
+### `src/lib/config.ts`
+
+```ts
+// Configuracao unica do quiz. Mexer aqui muda copy, opcoes e pontuacao.
+// Regra de copy do projeto: nada de travessao, acentuacao sempre correta.
+
+/**
+ * O enquadramento da abertura e "destrave a SUA demo", nao "responda um
+ * diagnostico". A diferenca importa: diagnostico e passivo e analitico, demo e
+ * posse. O lead termina o quiz pra pegar uma coisa que ja e dele.
+ */
+export const SITE = {
+  brand: 'PlugFlow',
+  produto: 'Orquestrador da Jornada do Cliente',
+  headline: 'Destrave a sua demo do Orquestrador da Jornada do Cliente',
+  // Curto de proposito: a versao longa enumerava as etapas e ocupava 4 linhas
+  // logo na primeira dobra, que e o que deixava a tela pesada. As etapas o lead
+  // ve acontecendo na animacao, nao precisa ler antes.
+  sub: 'Responda 4 perguntas e veja o seu lead sendo atendido, qualificado e agendado sozinho.',
+  webhook:
+    import.meta.env.VITE_WEBHOOK_URL ||
+    'https://n8n.renanshots.com/webhook/plugflow-quiz-bant',
+  whatsappChannel: 'da26f540-22d1-4add-8f15-d96755ceaa61',
+  whatsappNumber: '(11) 93242-5662',
+} as const
+
+/**
+ * Canais e recursos que a PlugFlow REALMENTE tem, conferidos nas telas do
+ * produto rodando. Nada aqui pode ser suposto: a tela nomeia integracao, e
+ * integracao que nao existe vira promessa quebrada na reuniao de vendas.
+ *
+ * NAO EXISTE e nao pode aparecer: e-mail e agenda/calendario nativos.
+ * O nome real do recurso de IA e "Agente Inteligente", nao "Agente de IA".
+ */
+export const CANAIS_ENTRADA = [
+  { id: 'whatsapp', label: 'WhatsApp' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'site', label: 'Site' },
+] as const
+
+/** Saidas do orquestrador, todas telas reais do produto. */
+export const DESTINOS = [
+  { label: 'Painel do CRM', nota: 'card criado' },
+  { label: 'Agente Inteligente', nota: 'qualificou o lead' },
+  { label: 'Sequência', nota: 'nutrição ligada' },
+  { label: 'Mensagem agendada', nota: 'retorno programado' },
+  { label: 'Indicadores', nota: 'origem registrada' },
+] as const
+
+/**
+ * Faixa de faturamento anual. O ICP da PlugFlow comeca em R$ 3 mi/ano, entao a
+ * resolucao das faixas vive ACIMA desse corte, que e onde a decisao acontece.
+ * Abaixo dele bastam duas faixas: separar o micro de quem esta quase no perfil
+ * e pode virar lead bom em pouco tempo.
+ *
+ * `icp` e explicito de proposito. Ja tinhamos errado inferindo perfil a partir
+ * do score, o que quebrava sozinho quando a pontuacao mudava.
+ */
+export const ANNUAL_REVENUE_RANGES = [
+  { value: 'ate-500k', label: 'Até R$ 500 mil', score: 0, icp: false },
+  { value: '500k-3mi', label: 'R$ 500 mil a R$ 3 milhões', score: 1, icp: false },
+  { value: '3-10mi', label: 'R$ 3 a R$ 10 milhões', score: 3, icp: true },
+  { value: '10-30mi', label: 'R$ 10 a R$ 30 milhões', score: 4, icp: true },
+  { value: '30-100mi', label: 'R$ 30 a R$ 100 milhões', score: 5, icp: true },
+  { value: 'acima-100mi', label: 'Acima de R$ 100 milhões', score: 5, icp: true },
+] as const
+
+// Need: a dor. Cada opcao vira o gancho da cena 3.
+export const PAIN_OPTIONS = [
+  {
+    value: 'demora',
+    label: 'Demora pra responder',
+    hint: 'O lead chega e fica horas esperando',
+    score: 5,
+  },
+  {
+    value: 'fora-horario',
+    label: 'Fora do horário comercial ninguém responde',
+    hint: 'Noite, fim de semana e feriado ficam no vácuo',
+    score: 5,
+  },
+  {
+    value: 'follow-up',
+    label: 'Falta follow up',
+    hint: 'Quem não responde na hora some pra sempre',
+    score: 4,
+  },
+  {
+    value: 'volume',
+    label: 'Volume alto demais pro time',
+    hint: 'Chega mais lead do que o time dá conta',
+    score: 4,
+  },
+  {
+    value: 'qualificacao',
+    label: 'Time perde tempo com curioso',
+    hint: 'Vendedor bom atendendo quem nunca vai comprar',
+    score: 3,
+  },
+  {
+    value: 'sem-controle',
+    label: 'Não sei o que acontece nas conversas',
+    hint: 'Cada um responde de um jeito e nada fica registrado',
+    score: 3,
+  },
+] as const
+
+// Authority: quem decide sobre automacao de atendimento.
+export const AUTHORITY_OPTIONS = [
+  { value: 'eu-decido', label: 'Sou eu quem decide', score: 5 },
+  { value: 'decido-com-socio', label: 'Decido junto com sócio ou diretoria', score: 4 },
+  { value: 'indico', label: 'Eu indico, outra pessoa aprova', score: 2 },
+  { value: 'outra-area', label: 'É de outra área', score: 1 },
+] as const
+
+// Timing: fecha o BANT na ultima tela.
+export const TIMING_OPTIONS = [
+  { value: 'agora', label: 'Pra ontem, é o gargalo do momento', score: 5 },
+  { value: '30-dias', label: 'Nos próximos 30 dias', score: 4 },
+  { value: '90-dias', label: 'Nos próximos 3 meses', score: 2 },
+  { value: 'pesquisando', label: 'Só pesquisando por enquanto', score: 0 },
+] as const
+
+export type Answers = {
+  nome: string
+  empresa: string
+  whatsapp: string
+  faturamento: string
+  dor: string
+  authority: string
+  timing: string
+}
+
+export const EMPTY_ANSWERS: Answers = {
+  nome: '',
+  empresa: '',
+  whatsapp: '',
+  faturamento: '',
+  dor: '',
+  authority: '',
+  timing: '',
+}
+
+type Scored = readonly { value: string; score: number }[]
+const scoreOf = (list: Scored, value: string) =>
+  list.find((o) => o.value === value)?.score ?? 0
+
+/**
+ * Score BANT de 0 a 20, com as 4 letras valendo 5 cada:
+ * Budget (faturamento), Authority, Need (dor) e Timing.
+ *
+ * Cortes: >=15 quente (vai pro agendamento), >=10 morno (nutricao),
+ * abaixo disso frio. Esta tabela e o espelho do que o n8n recalcula,
+ * entao mudanca aqui exige mudanca la.
+ */
+export function scoreBant(a: Answers) {
+  const budget = scoreOf(ANNUAL_REVENUE_RANGES, a.faturamento)
+  const authority = scoreOf(AUTHORITY_OPTIONS, a.authority)
+  const need = scoreOf(PAIN_OPTIONS, a.dor)
+  const timing = scoreOf(TIMING_OPTIONS, a.timing)
+  const total = budget + authority + need + timing
+
+  const tier = total >= 15 ? 'quente' : total >= 10 ? 'morno' : 'frio'
+  return { budget, authority, need, timing, total, tier } as const
+}
+
+export type BantScore = ReturnType<typeof scoreBant>
+
+```
+
+### `src/lib/submit.ts`
+
+```ts
+import {
+  ANNUAL_REVENUE_RANGES,
+  AUTHORITY_OPTIONS,
+  PAIN_OPTIONS,
+  SITE,
+  TIMING_OPTIONS,
+  scoreBant,
+  type Answers,
+} from './config'
+import { collectUtms, getLeadId, toE164 } from './utils'
+
+export type SubmitStage = 'parcial' | 'completo'
+
+type Labeled = readonly { value: string; label: string }[]
+const labelOf = (list: Labeled, value: string) =>
+  list.find((o) => o.value === value)?.label ?? ''
+
+/**
+ * Modo teste. Liga de duas formas:
+ *
+ *  1. `?teste=1` na URL, pra conferir a tela de proposito;
+ *  2. sozinho, quando a pagina esta dentro de um iframe.
+ *
+ * O item 2 nasceu de um incidente real: o preview do editor do Lovable roda
+ * num iframe e NAO carrega a querystring, entao quem abria ali pra "so olhar a
+ * animacao" disparava lead de verdade a cada preenchimento, e o WhatsApp
+ * recebia template atras de template. Preview e lugar de olhar, nao de gerar
+ * lead, entao o padrao seguro passa a ser: dentro de iframe, nao envia.
+ *
+ * A pagina publicada roda em aba propria, fora de iframe, e continua enviando
+ * normalmente. Se um dia o quiz for embutido em iframe de proposito, essa regra
+ * precisa mudar junto.
+ *
+ * Quando ligado, nada sai da maquina, o Pixel nao carrega e a tela avisa.
+ */
+export function modoTeste() {
+  if (typeof window === 'undefined') return false
+  const v = new URLSearchParams(window.location.search).get('teste')
+  if (v === '1' || v === 'true') return true
+  try {
+    return window.self !== window.top
+  } catch {
+    // Acesso negado ao window.top e sinal de iframe de outra origem.
+    return true
+  }
+}
+
+/**
+ * Manda pro n8n (/webhook/plugflow-quiz-bant).
+ *
+ * Dispara duas vezes de proposito:
+ *  - 'parcial' assim que nome + whatsapp existem, pra nao perder o lead que
+ *    abandona no meio do quiz;
+ *  - 'completo' no fim, com BANT fechado, que e o que dispara o HSM e o CRM.
+ *
+ * Contrato combinado com o backend: campos chatos e planos, cada resposta com
+ * `value` (chave estavel) e `Label` (texto que o lead viu). O WhatsApp sai daqui
+ * ja normalizado em E.164, o n8n confia nesse formato.
+ *
+ * `scoreClient` vai junto so como conferencia. Quem roteia e o score recalculado
+ * no n8n, porque qualquer um abre o devtools e posta o total que quiser.
+ *
+ * Falha de rede nunca pode travar a tela: o erro so e logado e o quiz segue.
+ */
+export async function sendLead(answers: Answers, stage: SubmitStage) {
+  const score = scoreBant(answers)
+
+  // A trava vem ANTES de montar qualquer requisicao: em modo teste nada sai.
+  // Devolve whatsappEnviado true de proposito, pra quem esta validando ver a
+  // tela final completa em vez do caminho pessimista.
+  if (modoTeste()) {
+    console.info('[quiz-bant] modo teste, nada enviado', { stage, score })
+    return { ok: true, status: 0, whatsappEnviado: true }
+  }
+
+  const payload = {
+    source: 'plugflow-quiz-bant-sdr',
+    stage,
+    leadId: getLeadId(),
+    submittedAt: new Date().toISOString(),
+
+    nome: answers.nome.trim(),
+    empresa: answers.empresa.trim(),
+    whatsapp: toE164(answers.whatsapp),
+    whatsappFormatado: answers.whatsapp,
+
+    faturamento: answers.faturamento,
+    faturamentoLabel: labelOf(ANNUAL_REVENUE_RANGES, answers.faturamento),
+    dor: answers.dor,
+    dorLabel: labelOf(PAIN_OPTIONS, answers.dor),
+    authority: answers.authority,
+    authorityLabel: labelOf(AUTHORITY_OPTIONS, answers.authority),
+    timing: answers.timing,
+    timingLabel: labelOf(TIMING_OPTIONS, answers.timing),
+
+    scoreClient: { total: score.total, tier: score.tier },
+    canalWhatsapp: SITE.whatsappChannel,
+    utm: collectUtms(),
+    pagina: typeof window !== 'undefined' ? window.location.href : '',
+  }
+
+  try {
+    const res = await fetch(SITE.webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    })
+
+    // O backend responde se o WhatsApp saiu de verdade. Ele so dispara pra
+    // quem esta dentro do ICP e nao entrou como frio, entao a tela NAO pode
+    // prometer mensagem pra todo mundo: parte dos leads nunca receberia nada
+    // e ficaria esperando.
+    let whatsappEnviado = false
+    try {
+      const corpo = (await res.clone().json()) as { whatsappEnviado?: boolean }
+      whatsappEnviado = corpo?.whatsappEnviado === true
+    } catch {
+      // Resposta sem JSON (proxy, erro cru). Trata como "nao prometi nada".
+    }
+
+    return { ok: res.ok, status: res.status, whatsappEnviado }
+  } catch (err) {
+    console.error('[quiz-bant] falha ao enviar lead', err)
+    return { ok: false, status: 0, whatsappEnviado: false }
+  }
+}
+
+```
+
+### `src/lib/pixel.ts`
+
+```ts
+import { modoTeste } from './submit'
+
+/**
+ * Pixel do Meta da PlugFlow (conta plugflowoficial).
+ *
+ * Injetado por codigo, nao pelo index.html, porque o projeto no Lovable roda
+ * em TanStack Start e o shell de HTML nao e necessariamente o `index.html`
+ * daqui. Injetando em runtime funciona nos dois lugares.
+ *
+ * Em modo teste nada e carregado nem disparado: evento de teste sujaria o sinal
+ * da campanha, que e o que o Meta usa pra otimizar entrega.
+ */
+const PIXEL_ID = '2122212278583984'
+
+type Fbq = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void
+  queue?: unknown[]
+  push?: unknown
+  loaded?: boolean
+  version?: string
+}
+
+declare global {
+  interface Window {
+    fbq?: Fbq
+    _fbq?: Fbq
+  }
+}
+
+export function iniciarPixel() {
+  if (typeof window === 'undefined' || modoTeste()) return
+  if (window.fbq) return
+
+  // Snippet oficial do Meta, escrito de forma legivel. A fila (`queue`) existe
+  // pra nao perder evento disparado antes do script terminar de carregar.
+  const fbq: Fbq = function (...args: unknown[]) {
+    if (fbq.callMethod) fbq.callMethod(...args)
+    else fbq.queue?.push(args)
+  }
+  fbq.queue = []
+  fbq.loaded = true
+  fbq.version = '2.0'
+  fbq.push = fbq
+  window.fbq = fbq
+  window._fbq = fbq
+
+  const s = document.createElement('script')
+  s.async = true
+  s.src = 'https://connect.facebook.net/en_US/fbevents.js'
+  document.head.appendChild(s)
+
+  window.fbq('init', PIXEL_ID)
+  window.fbq('track', 'PageView')
+}
+
+/**
+ * Só no envio 'completo' que deu certo. Disparar em toda tentativa infla o
+ * sinal e ensina o Meta a otimizar pra quem nao virou lead de verdade.
+ */
+export function marcarLead() {
+  if (typeof window === 'undefined' || modoTeste()) return
+  window.fbq?.('track', 'Lead')
+}
+
+```
+
+### `src/components/scenes/Scene2Qualifica.tsx`
+
+```tsx
+import { motion } from 'framer-motion'
+import { PhoneHeader, Thread, type Msg } from '@/components/chat'
+import { ANNUAL_REVENUE_RANGES } from '@/lib/config'
+
+/**
+ * Cena 2: o agente qualifica o porte sozinho, antes de gastar o tempo de
+ * qualquer vendedor. E o momento em que o lead entende que a IA nao e um
+ * robo de FAQ.
+ */
+export default function Scene2Qualifica({
+  active,
+  faturamento,
+  empresa,
+}: {
+  active: boolean
+  faturamento: string
+  empresa: string
+}) {
+  const faixa = ANNUAL_REVENUE_RANGES.find((r) => r.value === faturamento)
+  const label = faixa?.label ?? ''
+  const dentroDoPerfil = faixa?.icp ?? false
+
+  const msgs: Msg[] = [
+    {
+      from: 'ia',
+      // Usa o nome da empresa quando existe: mostra o agente trabalhando com o
+      // dado que a pessoa acabou de dar, em vez de falar generico.
+      // Sem artigo antes do nome: "a"/"o" antes de nome de empresa qualquer e
+      // aposta de genero e sai errado em metade dos casos.
+      text: empresa.trim()
+        ? `Antes de te passar preço, deixa eu entender o tamanho da operação. ${empresa.trim()} fatura mais ou menos quanto por ano?`
+        : 'Antes de te passar preço, deixa eu entender o tamanho da operação. Sua empresa fatura mais ou menos quanto por ano?',
+      typing: 800,
+    },
+    { from: 'lead', text: label, typing: 700, after: 300 },
+    {
+      from: 'ia',
+      text: dentroDoPerfil
+        ? 'Perfeito, esse é exatamente o porte que a gente atende. Já vou separar o cenário certo pra você.'
+        : 'Entendi. Nesse porte eu já consigo te mostrar um caminho mais enxuto, sem te empurrar coisa grande demais.',
+      typing: 900,
+    },
+  ]
+
+  return (
+    <div className="flex h-full flex-col">
+      <PhoneHeader
+        title="Agente Inteligente - PlugFlow"
+        subtitle="qualificando o lead"
+      />
+      <Thread msgs={msgs} active={active} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3.2 }}
+        className="border-t border-white/10 bg-white/5 px-3 py-2"
+      >
+        <div className="mb-1.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wide">
+          <span className="text-white/60">Qualificação automática</span>
+          <span className="text-grad">porte identificado</span>
+        </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+          <motion.div
+            className="h-full rounded-full bg-brand-grad"
+            initial={{ width: '0%' }}
+            animate={{ width: dentroDoPerfil ? '82%' : '48%' }}
+            transition={{ delay: 3.4, duration: 1.1, ease: 'easeOut' }}
+          />
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+```
 
 ### `src/components/Stage.tsx`
 
@@ -61,7 +512,13 @@ export default function Stage({
         >
           {scene === 0 && <SceneIdle />}
           {scene === 1 && <Scene1Entrada active nome={answers.nome} />}
-          {scene === 2 && <Scene2Qualifica active faturamento={answers.faturamento} />}
+          {scene === 2 && (
+            <Scene2Qualifica
+              active
+              faturamento={answers.faturamento}
+              empresa={answers.empresa}
+            />
+          )}
           {scene === 3 && <Scene3Nutre active dor={answers.dor} />}
           {scene === 4 && <Scene4Case active />}
           {scene === 5 && (
@@ -126,278 +583,6 @@ function StepDots({ current, total }: { current: number; total: number }) {
 
 ```
 
-### `src/components/fields/Fields.tsx`
-
-```tsx
-import { motion } from 'framer-motion'
-import { cx } from '@/lib/utils'
-
-export function Label({ children, hint }: { children: string; hint?: string }) {
-  return (
-    <div className="mb-2">
-      <label className="block font-display text-[15px] font-bold leading-snug">
-        {children}
-      </label>
-      {hint && <p className="mt-0.5 text-[12px] text-white/55">{hint}</p>}
-    </div>
-  )
-}
-
-export function TextField({
-  value,
-  onChange,
-  placeholder,
-  invalid,
-  inputMode = 'text',
-  autoComplete,
-  onEnter,
-}: {
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  invalid?: boolean
-  inputMode?: 'text' | 'tel'
-  autoComplete?: string
-  onEnter?: () => void
-}) {
-  return (
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault()
-          onEnter?.()
-        }
-      }}
-      placeholder={placeholder}
-      inputMode={inputMode}
-      autoComplete={autoComplete}
-      className={cx(
-        'w-full rounded-2xl border bg-white/5 px-4 py-3 text-white outline-none transition',
-        'placeholder:text-white/35 focus:border-rosa focus:bg-white/10',
-        invalid ? 'border-rosa/70' : 'border-white/15',
-      )}
-    />
-  )
-}
-
-export function ChoiceGrid({
-  options,
-  value,
-  onChange,
-  columns = 1,
-}: {
-  options: readonly { value: string; label: string; hint?: string }[]
-  value: string
-  onChange: (v: string) => void
-  columns?: 1 | 2
-}) {
-  return (
-    <div className={cx('grid gap-2', columns === 2 && 'grid-cols-2')}>
-      {options.map((o) => {
-        const selected = value === o.value
-        return (
-          <motion.button
-            key={o.value}
-            type="button"
-            whileTap={{ scale: 0.97 }}
-            onClick={() => onChange(o.value)}
-            /* Card com gradiente diagonal sutil e canto grande, no estilo dos
-               cards de pilar do site real. */
-            className={cx(
-              'rounded-2xl border px-3.5 py-2.5 text-left transition',
-              selected
-                ? 'border-rosa bg-brand-grad text-roxo-950'
-                : 'border-white/12 bg-gradient-to-br from-white/[0.07] to-white/[0.02] text-white hover:border-white/30',
-            )}
-          >
-            <span
-              className={cx(
-                'block text-[13px] font-semibold leading-snug',
-                selected && 'font-bold',
-              )}
-            >
-              {o.label}
-            </span>
-            {o.hint && (
-              <span
-                className={cx(
-                  'mt-0.5 block text-[11px] leading-snug',
-                  selected ? 'text-roxo-900/75' : 'text-white/50',
-                )}
-              >
-                {o.hint}
-              </span>
-            )}
-          </motion.button>
-        )
-      })}
-    </div>
-  )
-}
-
-export function PrimaryButton({
-  children,
-  onClick,
-  disabled,
-  loading,
-}: {
-  children: string
-  onClick: () => void
-  disabled?: boolean
-  loading?: boolean
-}) {
-  return (
-    <motion.button
-      type="button"
-      whileTap={{ scale: disabled ? 1 : 0.97 }}
-      onClick={onClick}
-      disabled={disabled || loading}
-      /* Pill totalmente arredondado com gradiente preenchido, igual ao CTA
-         primario do site real. */
-      className={cx(
-        'w-full rounded-full px-4 py-3.5 font-display text-[15px] font-black transition',
-        disabled || loading
-          ? 'cursor-not-allowed bg-white/10 text-white/40'
-          : 'bg-brand-grad text-roxo-950 shadow-lg shadow-magenta/30',
-      )}
-    >
-      {loading ? 'Enviando...' : children}
-    </motion.button>
-  )
-}
-
-```
-
-### `src/components/scenes/Scene6Distribuicao.tsx`
-
-```tsx
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
-import { cx, prefersReducedMotion } from '@/lib/utils'
-import { DESTINOS } from '@/lib/config'
-
-/**
- * Cena da distribuicao: o motor dispara pra todos os destinos ao mesmo tempo.
- * E a cena que vende "orquestrador" em vez de "bot": o valor nao esta em
- * responder, esta em tudo acontecer junto e em segundos.
- *
- * Os destinos sao telas reais do produto (ver DESTINOS). Nao existe e-mail nem
- * agenda nativa, entao nada disso aparece aqui.
- */
-export default function Scene6Distribuicao({ active }: { active: boolean }) {
-  const [acesos, setAcesos] = useState(0)
-  const [ms, setMs] = useState(0)
-
-  useEffect(() => {
-    if (!active) return
-    if (prefersReducedMotion()) {
-      setAcesos(DESTINOS.length)
-      setMs(1400)
-      return
-    }
-    setAcesos(0)
-    setMs(0)
-
-    const inicio = performance.now()
-    const relogio = window.setInterval(() => {
-      const passou = performance.now() - inicio
-      setMs(passou >= 1400 ? 1400 : passou)
-      if (passou >= 1400) window.clearInterval(relogio)
-    }, 60)
-
-    const acender = window.setInterval(() => {
-      setAcesos((n) => {
-        if (n >= DESTINOS.length) {
-          window.clearInterval(acender)
-          return n
-        }
-        return n + 1
-      })
-    }, 260)
-
-    return () => {
-      window.clearInterval(relogio)
-      window.clearInterval(acender)
-    }
-  }, [active])
-
-  const terminou = acesos >= DESTINOS.length
-
-  return (
-    <div className="flex h-full flex-col justify-center px-3.5 py-2">
-      {/* O motor, no topo */}
-      <div className="flex items-center justify-center">
-        <div className="rounded-lg border border-rosa/35 bg-brand-grad px-3 py-1">
-          <p className="font-display text-[11px] font-black leading-tight text-roxo-950">
-            Orquestrador PlugFlow
-          </p>
-        </div>
-      </div>
-
-      {/* Pulso saindo pros destinos */}
-      <div className="relative mx-auto my-1 h-4 w-px bg-white/15">
-        <motion.span
-          className="absolute left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-rosa"
-          initial={{ top: 0, opacity: 0 }}
-          animate={active ? { top: ['0%', '100%'], opacity: [0, 1, 0] } : {}}
-          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 0.5 }}
-        />
-      </div>
-
-      {/* Os destinos acendendo quase juntos */}
-      <div className="grid grid-cols-3 gap-1.5">
-        {DESTINOS.map((d, i) => {
-          const aceso = i < acesos
-          return (
-            <motion.div
-              key={d.label}
-              initial={{ opacity: 0.25, scale: 0.96 }}
-              animate={aceso ? { opacity: 1, scale: 1 } : {}}
-              transition={{ type: 'spring', stiffness: 340, damping: 26 }}
-              className={cx(
-                'rounded-lg border px-1.5 py-1.5 text-center transition-colors',
-                aceso
-                  ? 'border-rosa/40 bg-white/10'
-                  : 'border-white/10 bg-white/[0.03]',
-              )}
-            >
-              {/* Sem truncate: com Lexend "Mensagem agendada" era cortada e
-                  virava "Mensagem agenda...", que parece defeito. */}
-              <p className="text-[9px] font-bold leading-tight">{d.label}</p>
-              <p
-                className={cx(
-                  'mt-0.5 text-[8px] leading-tight',
-                  aceso ? 'text-rosa' : 'text-white/30',
-                )}
-              >
-                {aceso ? d.nota : 'aguardando'}
-              </p>
-            </motion.div>
-          )
-        })}
-      </div>
-
-      {/* O cronometro, que e o que vende velocidade */}
-      <div className="mt-2 flex items-center justify-center gap-2">
-        <span className="rounded-full bg-white/10 px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums text-white/85">
-          {(ms / 1000).toFixed(1)}s
-        </span>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={terminou ? { opacity: 1 } : {}}
-          className="text-[10px] font-semibold leading-tight text-white/75"
-        >
-          Tudo isso <span className="text-grad font-black">de uma vez só</span>
-        </motion.p>
-      </div>
-    </div>
-  )
-}
-
-```
-
 ### `src/App.tsx`
 
 ```tsx
@@ -416,6 +601,7 @@ import {
   TIMING_OPTIONS,
   type Answers,
 } from './lib/config'
+import { iniciarPixel, marcarLead } from './lib/pixel'
 import { modoTeste, sendLead } from './lib/submit'
 import { isValidName, isValidPhone, maskPhone } from './lib/utils'
 
@@ -443,6 +629,10 @@ export default function App() {
   // esperando um contato que ninguem sabe que precisa fazer.
   const [erroEnvio, setErroEnvio] = useState(false)
   const parcialEnviado = useRef(false)
+  // Trava de reentrancia. O botao ja fica desabilitado durante o envio, mas
+  // isso e o ultimo anteparo contra dois disparos do 'completo' saindo juntos,
+  // que e o que gera task duplicada e template repetido no WhatsApp.
+  const enviandoRef = useRef(false)
 
   const set = <K extends keyof Answers>(k: K, v: Answers[K]) =>
     setAnswers((a) => ({ ...a, [k]: v }))
@@ -450,18 +640,19 @@ export default function App() {
   const scene = desfecho > 0 ? desfecho : concluido || enviando ? 5 : step
 
   const nomeOk = isValidName(answers.nome)
+  const empresaOk = answers.empresa.trim().length >= 2
   const foneOk = isValidPhone(answers.whatsapp)
 
   const avancarStep0 = useCallback(() => {
     setTentouStep0(true)
-    if (!nomeOk || !foneOk) return
+    if (!nomeOk || !empresaOk || !foneOk) return
     setStep(1)
     // Lead parcial: garante que quem abandonar no meio ainda chega no CRM.
     if (!parcialEnviado.current) {
       parcialEnviado.current = true
       void sendLead(answers, 'parcial')
     }
-  }, [answers, nomeOk, foneOk])
+  }, [answers, nomeOk, empresaOk, foneOk])
 
   // Cada escolha destrava a proxima cena sozinha, sem botao no meio do caminho.
   const escolher = (campo: keyof Answers, valor: string, proximo: number) => {
@@ -470,11 +661,16 @@ export default function App() {
   }
 
   const finalizar = async (timing: string) => {
+    // Segundo disparo enquanto o primeiro esta no ar: ignora.
+    if (enviandoRef.current || (concluido && !erroEnvio)) return
+    enviandoRef.current = true
+
     set('timing', timing)
     setErroEnvio(false)
     setEnviando(true)
     const r = await sendLead({ ...answers, timing }, 'completo')
     setEnviando(false)
+    enviandoRef.current = false
 
     if (!r.ok) {
       // Botao continua clicavel de proposito. Retentar nao duplica lead: o
@@ -485,7 +681,13 @@ export default function App() {
 
     setVaiReceberWhats(r.whatsappEnviado)
     setConcluido(true)
+    marcarLead()
   }
+
+  // PageView do Pixel, uma vez por carregamento.
+  useEffect(() => {
+    iniciarPixel()
+  }, [])
 
   useEffect(() => {
     if (!concluido) return
@@ -554,9 +756,11 @@ export default function App() {
                   finalizar={finalizar}
                   tentouStep0={tentouStep0}
                   nomeOk={nomeOk}
+                  empresaOk={empresaOk}
                   foneOk={foneOk}
                   enviando={enviando}
                   erroEnvio={erroEnvio}
+                  concluido={concluido}
                 />
               )}
             </motion.div>
@@ -595,9 +799,11 @@ type PassoProps = {
   finalizar: (timing: string) => void
   tentouStep0: boolean
   nomeOk: boolean
+  empresaOk: boolean
   foneOk: boolean
   enviando: boolean
   erroEnvio: boolean
+  concluido: boolean
 }
 
 function Passo({
@@ -609,9 +815,11 @@ function Passo({
   finalizar,
   tentouStep0,
   nomeOk,
+  empresaOk,
   foneOk,
   enviando,
   erroEnvio,
+  concluido,
 }: PassoProps) {
   if (step === 0) {
     return (
@@ -627,7 +835,7 @@ function Passo({
         {/* Nome e WhatsApp continuam juntos: sao um bloco so ("como te chamo e
             onde falo com voce"), e separar adiaria a primeira cena. */}
         <Label hint="É por onde a gente continua a conversa depois">
-          Como você se chama e qual o seu WhatsApp?
+          Seu nome, sua empresa e seu WhatsApp
         </Label>
         <div className="space-y-2">
           <TextField
@@ -636,6 +844,16 @@ function Passo({
             placeholder="Seu nome"
             autoComplete="name"
             invalid={tentouStep0 && !nomeOk}
+            onEnter={avancarStep0}
+          />
+          {/* Funil B2B: sem o nome da empresa o vendedor liga sem saber pra
+              quem esta ligando. */}
+          <TextField
+            value={answers.empresa}
+            onChange={(v) => set('empresa', v)}
+            placeholder="Nome da empresa"
+            autoComplete="organization"
+            invalid={tentouStep0 && !empresaOk}
             onEnter={avancarStep0}
           />
           <TextField
@@ -647,11 +865,13 @@ function Passo({
             invalid={tentouStep0 && !foneOk}
             onEnter={avancarStep0}
           />
-          {tentouStep0 && (!nomeOk || !foneOk) && (
+          {tentouStep0 && (!nomeOk || !empresaOk || !foneOk) && (
             <p className="text-[12px] text-rosa">
               {!nomeOk
                 ? 'Escreve seu nome pra gente continuar'
-                : 'Confere o WhatsApp com DDD, parece incompleto'}
+                : !empresaOk
+                  ? 'Falta o nome da empresa'
+                  : 'Confere o WhatsApp com DDD, parece incompleto'}
             </p>
           )}
         </div>
@@ -724,7 +944,7 @@ function Passo({
       <div className="mt-3">
         <PrimaryButton
           onClick={() => void finalizar(answers.timing)}
-          disabled={!answers.timing}
+          disabled={!answers.timing || (concluido && !erroEnvio)}
           loading={enviando}
         >
           {erroEnvio ? 'Tentar de novo' : 'Destravar a demo completa'}
