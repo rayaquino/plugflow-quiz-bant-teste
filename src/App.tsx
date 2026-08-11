@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import Logo from './components/Logo'
 import Stage from './components/Stage'
 import { ChoiceGrid, Label, PrimaryButton, TextField } from './components/fields/Fields'
 import {
@@ -208,13 +209,13 @@ function Passo({
   if (step === 0) {
     return (
       <div>
-        <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-rosa">
-          {SITE.brand} · {SITE.produto}
-        </p>
+        {/* O logo substitui o eyebrow de texto. Menos uma linha na tela e
+            some a repeticao do nome do produto, que ja esta no titulo. */}
+        <Logo className="mb-3 h-5" />
         <h1 className="font-display text-[21px] font-black leading-[1.15] lg:text-3xl">
           {SITE.headline}
         </h1>
-        <p className="mb-4 mt-2 text-[12.5px] leading-snug text-white/65">{SITE.sub}</p>
+        <p className="mb-4 mt-2 text-[13px] leading-snug text-white/65">{SITE.sub}</p>
 
         {/* Nome e WhatsApp continuam juntos: sao um bloco so ("como te chamo e
             onde falo com voce"), e separar adiaria a primeira cena. */}

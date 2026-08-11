@@ -10,7 +10,10 @@ export const SITE = {
   brand: 'PlugFlow',
   produto: 'Orquestrador da Jornada do Cliente',
   headline: 'Destrave a sua demo do Orquestrador da Jornada do Cliente',
-  sub: 'Responda 4 perguntas rápidas e veja a demo montada pro seu cenário: o lead chegando por qualquer canal, sendo atendido, qualificado e agendado sozinho, enquanto o seu time cuida de fechar.',
+  // Curto de proposito: a versao longa enumerava as etapas e ocupava 4 linhas
+  // logo na primeira dobra, que e o que deixava a tela pesada. As etapas o lead
+  // ve acontecendo na animacao, nao precisa ler antes.
+  sub: 'Responda 4 perguntas e veja o seu lead sendo atendido, qualificado e agendado sozinho.',
   webhook:
     import.meta.env.VITE_WEBHOOK_URL ||
     'https://n8n.renanshots.com/webhook/plugflow-quiz-bant',

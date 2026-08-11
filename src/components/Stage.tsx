@@ -29,6 +29,18 @@ export default function Stage({
       <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-magenta/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-roxo-600/35 blur-3xl" />
 
+      {/* Marca d'agua so na tela de espera, que e onde sobra vazio. Nas cenas
+          com conteudo ela encostava no texto do rodape e virava ruido, entao
+          nao vale a pena ganhar marca e perder leitura. */}
+      {scene === 0 && (
+        <img
+          src="/plugflow-logo.svg"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-2.5 right-3 w-[34%] opacity-[0.09]"
+        />
+      )}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={scene}
@@ -68,26 +80,20 @@ export default function Stage({
 function SceneIdle() {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+      {/* Saiu o circulo "IA" (a marca certa e a PlugFlow, nao um selo generico)
+          e saiu a seta, que repetia o que os pontinhos ja dizem. Sobraram tres
+          elementos em vez de cinco. */}
       <motion.div
-        className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-brand-grad text-2xl font-black text-roxo-950"
-        animate={{ scale: [1, 1.06, 1] }}
-        transition={{ duration: 2.4, repeat: Infinity }}
-      >
-        IA
-      </motion.div>
+        className="mb-3 h-2 w-2 rounded-full bg-brand-grad"
+        animate={{ scale: [1, 1.9, 1], opacity: [1, 0.4, 1] }}
+        transition={{ duration: 2.2, repeat: Infinity }}
+      />
       <p className="font-display text-[16px] font-black leading-tight">
         A sua demo <span className="text-grad">começa aqui</span>
       </p>
       <p className="mt-1.5 text-[12px] leading-snug text-white/60">
         Preencha o primeiro campo e veja a jornada do seu cliente rodando
       </p>
-      <motion.div
-        className="mt-4 text-white/40"
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 1.6, repeat: Infinity }}
-      >
-        ↓
-      </motion.div>
     </div>
   )
 }
