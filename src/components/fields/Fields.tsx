@@ -73,7 +73,7 @@ export function ChoiceGrid({
             whileTap={{ scale: 0.97 }}
             onClick={() => onChange(o.value)}
             className={cx(
-              'rounded-xl border px-3.5 py-3 text-left transition',
+              'rounded-xl border px-3.5 py-2.5 text-left transition',
               selected
                 ? 'border-rosa bg-brand-grad text-roxo-950'
                 : 'border-white/15 bg-white/5 text-white hover:border-white/35',
