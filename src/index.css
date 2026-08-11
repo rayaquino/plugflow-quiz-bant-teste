@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-roxo-900 font-sans text-white antialiased;
+    /* trava o bounce do iOS: a cena fica fixa, so o form rola */
+    overscroll-behavior-y: none;
+  }
+  /* evita o zoom automatico do iOS ao focar input */
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px;
+  }
+}
+
+@layer utilities {
+  .text-grad {
+    @apply bg-brand-grad bg-clip-text text-transparent;
+  }
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
