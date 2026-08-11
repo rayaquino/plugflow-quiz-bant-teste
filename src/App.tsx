@@ -34,6 +34,9 @@ export default function App() {
   // Depois do envio o desfecho roda sozinho, em dois tempos:
   // 6 = o motor disparando pra todos os destinos, 7 = o lead andando no CRM.
   const [desfecho, setDesfecho] = useState(0)
+  // Envio que falhou NAO pode virar tela de "recebemos": a pessoa ficaria
+  // esperando um contato que ninguem sabe que precisa fazer.
+  const [erroEnvio, setErroEnvio] = useState(false)
   const parcialEnviado = useRef(false)
 
   const set = <K extends keyof Answers>(k: K, v: Answers[K]) =>
@@ -63,10 +66,19 @@ export default function App() {
 
   const finalizar = async (timing: string) => {
     set('timing', timing)
+    setErroEnvio(false)
     setEnviando(true)
     const r = await sendLead({ ...answers, timing }, 'completo')
-    setVaiReceberWhats(r.whatsappEnviado)
     setEnviando(false)
+
+    if (!r.ok) {
+      // Botao continua clicavel de proposito. Retentar nao duplica lead: o
+      // leadId e estavel na sessao e o backend casa por ele e pelo E.164.
+      setErroEnvio(true)
+      return
+    }
+
+    setVaiReceberWhats(r.whatsappEnviado)
     setConcluido(true)
   }
 
@@ -138,6 +150,7 @@ export default function App() {
                   nomeOk={nomeOk}
                   foneOk={foneOk}
                   enviando={enviando}
+                  erroEnvio={erroEnvio}
                 />
               )}
             </motion.div>
@@ -176,6 +189,7 @@ type PassoProps = {
   nomeOk: boolean
   foneOk: boolean
   enviando: boolean
+  erroEnvio: boolean
 }
 
 function Passo({
@@ -189,6 +203,7 @@ function Passo({
   nomeOk,
   foneOk,
   enviando,
+  erroEnvio,
 }: PassoProps) {
   if (step === 0) {
     return (
@@ -292,13 +307,19 @@ function Passo({
         value={answers.timing}
         onChange={(v) => set('timing', v)}
       />
+      {erroEnvio && (
+        <p className="mt-3 rounded-xl border border-rosa/40 bg-rosa/10 px-3 py-2 text-[12px] leading-snug text-rosa">
+          Não consegui enviar suas respostas agora. Confere a conexão e toca de novo,
+          que eu tento outra vez.
+        </p>
+      )}
       <div className="mt-3">
         <PrimaryButton
           onClick={() => void finalizar(answers.timing)}
           disabled={!answers.timing}
           loading={enviando}
         >
-          Destravar a demo completa
+          {erroEnvio ? 'Tentar de novo' : 'Destravar a demo completa'}
         </PrimaryButton>
       </div>
     </div>
