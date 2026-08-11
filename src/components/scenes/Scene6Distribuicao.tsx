@@ -88,10 +88,12 @@ export default function Scene6Distribuicao({ active }: { active: boolean }) {
                   : 'border-white/10 bg-white/[0.03]',
               )}
             >
-              <p className="truncate text-[9px] font-bold leading-tight">{d.label}</p>
+              {/* Sem truncate: com Lexend "Mensagem agendada" era cortada e
+                  virava "Mensagem agenda...", que parece defeito. */}
+              <p className="text-[9px] font-bold leading-tight">{d.label}</p>
               <p
                 className={cx(
-                  'mt-0.5 truncate text-[8px] leading-tight',
+                  'mt-0.5 text-[8px] leading-tight',
                   aceso ? 'text-rosa' : 'text-white/30',
                 )}
               >

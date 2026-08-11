@@ -7,7 +7,7 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-roxo-900 font-sans text-white antialiased;
+    @apply bg-fundo font-sans text-white antialiased;
     /* trava o bounce do iOS: a cena fica fixa, so o form rola */
     overscroll-behavior-y: none;
   }

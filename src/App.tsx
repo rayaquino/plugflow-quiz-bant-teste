@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import Feixes from './components/Feixes'
 import Logo from './components/Logo'
 import Stage from './components/Stage'
 import { ChoiceGrid, Label, PrimaryButton, TextField } from './components/fields/Fields'
@@ -100,6 +101,7 @@ export default function App() {
 
   return (
     <div className="relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden lg:max-w-6xl lg:flex-row lg:items-center lg:gap-8 lg:px-8">
+      <Feixes />
       {teste && (
         <div className="pointer-events-none absolute left-1/2 top-1 z-50 -translate-x-1/2 rounded-full border border-amber-400/50 bg-amber-400/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
           Modo teste · nada é enviado
@@ -170,8 +172,10 @@ export default function App() {
           ) : (
             <span />
           )}
-          <p className="safe-bottom text-right text-[10px] leading-snug text-white/30">
-            Seus dados servem só pro contato comercial da {SITE.brand}
+          {/* Curto porque a Lexend e mais larga que a fonte anterior e a versao
+              longa passou a quebrar em duas linhas em cima do botao Voltar. */}
+          <p className="safe-bottom whitespace-nowrap text-right text-[10px] leading-snug text-white/30">
+            Uso só para contato comercial
           </p>
         </div>
       </div>

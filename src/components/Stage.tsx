@@ -24,7 +24,7 @@ export default function Stage({
   whatsappEnviado: boolean
 }) {
   return (
-    <div className="relative h-full overflow-hidden rounded-2xl border border-white/12 bg-roxo-950/60 shadow-2xl">
+    <div className="relative h-full overflow-hidden rounded-3xl border border-white/12 bg-gradient-to-br from-roxo-900/70 to-fundo shadow-2xl">
       {/* brilho de fundo da marca */}
       <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-magenta/25 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-roxo-600/35 blur-3xl" />
