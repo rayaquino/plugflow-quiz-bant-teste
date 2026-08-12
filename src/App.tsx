@@ -114,7 +114,21 @@ export default function App() {
   const podeVoltar = step > 0 && !enviando && !concluido
   // Precisa ser visivel na tela, nao so no console: sem isso alguem testa,
   // ve "demo destravada" e acha que entrou lead de verdade (ou o contrario).
-  const teste = modoTeste()
+  //
+  // Resolvido DEPOIS da montagem, nunca durante o render. Com SSR os dois lados
+  // discordam: no servidor nao existe window e `modoTeste()` da false, no cliente
+  // dentro de iframe da true. Isso trocaria a arvore logo abaixo da raiz entre o
+  // HTML do servidor e o primeiro render do cliente, e o mismatch mata a
+  // hidratacao da pagina inteira: renderiza tudo e nao responde a nada.
+  // O primeiro render do cliente precisa bater com o servidor, entao comeca
+  // false e o efeito liga o aviso depois.
+  //
+  // So o AVISO na tela mudou. A trava de verdade continua chamando `modoTeste()`
+  // na hora do envio (submit.ts), que e o que impede o POST sair do preview.
+  const [teste, setTeste] = useState(false)
+  useEffect(() => {
+    setTeste(modoTeste())
+  }, [])
 
   return (
     <div className="relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden lg:max-w-6xl lg:flex-row lg:items-center lg:gap-8 lg:px-8">
