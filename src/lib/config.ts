@@ -17,8 +17,11 @@ export const SITE = {
   webhook:
     import.meta.env.VITE_WEBHOOK_URL ||
     'https://n8n.renanshots.com/webhook/plugflow-quiz-bant',
-  whatsappChannel: 'da26f540-22d1-4add-8f15-d96755ceaa61',
-  whatsappNumber: '(11) 93242-5662',
+  // Canal comercial real da PlugFlow. O da26f540 (93242-5662) era o numero
+  // ERRADO, corrigido pelo Renan em 11/08 - nao usar de novo.
+  whatsappChannel: '922d5cde-1999-4344-b0ea-02a87c27639b',
+  whatsappNumber: '(11) 92592-7636',
+  whatsappNumeroWa: '5511925927636',
 } as const
 
 /**
