@@ -71,7 +71,7 @@ export default function Scene7Crm({
             <div key={e.label} className="flex-1">
               <p
                 className={cx(
-                  'mb-1 truncate text-center text-[8px] font-bold uppercase tracking-wide transition-colors',
+                  'mb-1 truncate text-center text-[9.5px] font-bold uppercase tracking-normal transition-colors',
                   passou ? 'text-rosa' : 'text-white/35',
                 )}
               >
@@ -91,7 +91,7 @@ export default function Scene7Crm({
                     transition={{ type: 'spring', stiffness: 320, damping: 30 }}
                     className="w-[92%] rounded-md bg-brand-grad px-1 py-1 text-center shadow-lg"
                   >
-                    <span className="block truncate text-[9px] font-black leading-tight text-roxo-950">
+                    <span className="block truncate text-[10px] font-black leading-tight text-roxo-950">
                       {primeiro}
                     </span>
                   </motion.div>
@@ -121,13 +121,13 @@ export default function Scene7Crm({
         transition={{ duration: 0.4 }}
         className="mt-1 rounded-xl border border-white/12 bg-white/5 p-2.5"
       >
-        <p className="mb-1.5 text-[8px] font-bold uppercase tracking-wider text-white/45">
+        <p className="mb-1.5 text-[9.5px] font-bold uppercase tracking-normal text-white/45">
           Dashboard · origem do lead
         </p>
         <div className="flex items-end justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-[11px] font-bold leading-tight">{origem}</p>
-            <p className="truncate text-[9px] leading-tight text-white/50">
+            <p className="truncate text-[10px] leading-tight text-white/50">
               {criativo}
             </p>
           </div>
