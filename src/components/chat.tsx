@@ -61,21 +61,31 @@ export function useThread(msgs: Msg[], active: boolean) {
 
 export function Thread({ msgs, active }: { msgs: Msg[]; active: boolean }) {
   const { shown, typing } = useThread(msgs, active)
-  const endRef = useRef<HTMLDivElement>(null)
+  const listaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const el = listaRef.current
+    if (!el) return
+    // Rola a PROPRIA lista, nao `scrollIntoView`. O scrollIntoView sobe pelos
+    // ancestrais e rola o primeiro que puder rolar: agora que o Palco tem
+    // `overflow-y-auto` como rede de seguranca, ele levaria o Palco junto e
+    // tiraria o cabecalho do "aparelho" da tela sozinho.
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [shown, typing])
 
   return (
-    <div className="no-scrollbar flex-1 space-y-2 overflow-y-auto px-3 py-3">
+    <div
+      ref={listaRef}
+      /* py-2 no celular: com py-3 sobravam ~115px pra conversa num iPhone e a
+         folga comia quase um balao inteiro. */
+      className="no-scrollbar flex-1 space-y-2 overflow-y-auto px-3 py-2 lg:py-3"
+    >
       <AnimatePresence initial={false}>
         {msgs.slice(0, shown).map((m, i) => (
           <Bubble key={i} msg={m} />
         ))}
         {typing && <Typing key="typing" side={sideOf(msgs[shown]?.from ?? 'ia')} />}
       </AnimatePresence>
-      <div ref={endRef} />
     </div>
   )
 }

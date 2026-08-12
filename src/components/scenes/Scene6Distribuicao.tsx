@@ -51,7 +51,7 @@ export default function Scene6Distribuicao({ active }: { active: boolean }) {
   const terminou = acesos >= DESTINOS.length
 
   return (
-    <div className="flex h-full flex-col justify-center px-3.5 py-2">
+    <div className="flex min-h-full flex-col justify-center px-3.5 py-2">
       {/* O motor, no topo */}
       <div className="flex items-center justify-center">
         <div className="rounded-lg border border-rosa/35 bg-brand-grad px-3 py-1">

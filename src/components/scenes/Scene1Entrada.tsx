@@ -19,7 +19,7 @@ export default function Scene1Entrada({
   const primeiro = firstName(nome) || 'Seu lead'
 
   return (
-    <div className="flex h-full flex-col justify-center px-3.5 py-2">
+    <div className="flex min-h-full flex-col justify-center px-3.5 py-2">
       <div className="mb-2 flex items-center justify-center gap-1.5">
         <motion.span
           className="h-1.5 w-1.5 rounded-full bg-rosa"

@@ -26,7 +26,11 @@ const CASE = {
 
 export default function Scene4Case({ active }: { active: boolean }) {
   return (
-    <div className="relative flex h-full flex-col justify-center px-3.5 py-2">
+    /* `min-h-full` e nao `h-full`: com altura travada, `justify-center` joga o
+       excedente pra CIMA da caixa e o `overflow-hidden` do Palco engole o
+       cabecalho do card. Com min-height a cena cresce em vez de centralizar,
+       e o que sobrar rola. */
+    <div className="relative flex min-h-full flex-col justify-center px-3 py-0.5 lg:py-2">
       {/* Foto de consultorio, escurecida, atras do card.
           Escolhi uma sala VAZIA de proposito: reforca o "bracos cruzados" do
           case e nao mostra pessoa nenhuma, entao nao da pra confundir com foto
@@ -43,7 +47,7 @@ export default function Scene4Case({ active }: { active: boolean }) {
         /* `shrink-0` junto com `overflow-hidden`: overflow diferente de visible
            zera o tamanho minimo automatico do item flex, e sem isso o card
            encolhe e corta a propria ultima frase. */
-        className="relative shrink-0 overflow-hidden rounded-2xl border border-white/15 p-3"
+        className="relative shrink-0 overflow-hidden rounded-2xl border border-white/15 p-1.5 lg:p-3"
       >
         {/* Foto DENTRO do card: fora dele o card ocupava o palco inteiro e a
             imagem nao aparecia. Sala vazia de proposito, reforca o "bracos
@@ -85,24 +89,24 @@ export default function Scene4Case({ active }: { active: boolean }) {
           initial={{ opacity: 0 }}
           animate={active ? { opacity: 1 } : {}}
           transition={{ delay: 1 }}
-          className="mt-2 font-display text-[15px] font-extrabold leading-snug"
+          className="mt-1 font-display text-[13px] font-extrabold leading-[1.2] lg:mt-2 lg:text-[15px] lg:leading-snug"
         >
           <span className="text-grad">"Dá pra pausar as IAs em horário comercial?</span>{' '}
           Minhas {CASE.atendentes} atendentes estão de braços cruzados."
         </motion.blockquote>
 
         {/* As 4 atendentes ficando ociosas, uma a uma */}
-        <div className="mt-2.5 flex items-center justify-center gap-2.5">
+        <div className="mt-1 flex items-center justify-center gap-2.5 lg:mt-2.5">
           {Array.from({ length: CASE.atendentes }).map((_, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0.6 }}
               animate={active ? { opacity: 1, scale: 1 } : {}}
               transition={{ delay: 1.6 + i * 0.18 }}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-0.5 lg:gap-1"
             >
               <motion.div
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[13px]"
+                className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-white/10 text-[11px] lg:h-7 lg:w-7 lg:text-[13px]"
                 animate={active ? { filter: ['grayscale(0)', 'grayscale(1)'] } : {}}
                 transition={{ delay: 2.6 + i * 0.18, duration: 0.5 }}
               >
@@ -112,7 +116,7 @@ export default function Scene4Case({ active }: { active: boolean }) {
                 initial={{ opacity: 0 }}
                 animate={active ? { opacity: 1 } : {}}
                 transition={{ delay: 2.8 + i * 0.18 }}
-                className="text-[9px] font-semibold uppercase tracking-wide text-white/50"
+                className="text-[9px] font-semibold uppercase leading-none tracking-wide text-white/50"
               >
                 ociosa
               </motion.span>
@@ -124,7 +128,7 @@ export default function Scene4Case({ active }: { active: boolean }) {
           initial={{ opacity: 0, y: 8 }}
           animate={active ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 3.6 }}
-          className="mt-2.5 border-t border-white/10 pt-2 text-center text-[11.5px] leading-snug text-white/85"
+          className="mt-1 border-t border-white/10 pt-1 text-center text-[10.5px] leading-[1.25] text-white/85 lg:mt-2.5 lg:pt-2 lg:text-[11.5px] lg:leading-snug"
         >
           O pedido não veio de falha da IA. Veio porque ela{' '}
           <span className="text-grad font-black">não estava deixando sobrar</span>{' '}
@@ -142,7 +146,7 @@ export default function Scene4Case({ active }: { active: boolean }) {
         transition={{ delay: 4.2 }}
         /* `relative` obrigatorio: sem isso a camada da foto, que e absoluta,
            pinta por cima desta linha e some com a fonte do dado. */
-        className="relative mt-1.5 px-1 text-center text-[9.5px] leading-tight text-white/45"
+        className="relative mt-0.5 px-1 text-center text-[9px] leading-[1.2] text-white/45 lg:mt-1.5 lg:text-[9.5px] lg:leading-tight"
       >
         Responder na primeira hora torna a empresa cerca de{' '}
         <span className="font-bold text-white/70">7 vezes mais propensa</span> a

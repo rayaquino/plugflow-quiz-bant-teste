@@ -48,9 +48,15 @@ export default function Stage({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -18 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          /* pb-5 reserva a faixa dos indicadores, senao eles sobrepoem o
-             rodape das cenas 1, 3 e 4 */
-          className="relative h-full pb-5"
+          /* pb-3.5 reserva a faixa dos indicadores (eles vivem em bottom-2.5 e
+             tem 4px), senao sobrepoem o rodape das cenas 1, 3 e 4.
+             Era pb-5, folga que nao existe em tela de celular.
+             `overflow-y-auto` e rede de seguranca, nao o layout esperado: as
+             cenas foram ajustadas pra caber em 205px, que e o que sobra num
+             iPhone com a barra do Safari aberta. Sem isso, cena que estoura
+             some pra fora do `overflow-hidden` do Palco e o topo fica
+             INALCANCAVEL, que foi o bug do case e da tela final no iPhone. */
+          className="no-scrollbar relative h-full overflow-y-auto pb-3.5"
         >
           {scene === 0 && <SceneIdle />}
           {scene === 1 && <Scene1Entrada active nome={answers.nome} />}
@@ -85,7 +91,7 @@ export default function Stage({
 
 function SceneIdle() {
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center px-6 text-center">
       {/* Saiu o circulo "IA" (a marca certa e a PlugFlow, nao um selo generico)
           e saiu a seta, que repetia o que os pontinhos ja dizem. Sobraram tres
           elementos em vez de cinco. */}

@@ -58,7 +58,7 @@ export default function Scene7Crm({
   const chegouNoFim = etapa >= ETAPAS.length - 1
 
   return (
-    <div className="flex h-full flex-col justify-center px-3 py-2">
+    <div className="flex min-h-full flex-col justify-center px-3 py-2">
       <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-rosa">
         A partir daqui, sozinho
       </p>

@@ -43,7 +43,7 @@ export default function Scene2Qualifica({
   ]
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-full flex-col">
       <PhoneHeader
         title="Agente Inteligente - PlugFlow"
         subtitle="qualificando o lead"

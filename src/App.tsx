@@ -15,7 +15,7 @@ import {
 } from './lib/config'
 import { iniciarPixel, marcarLead } from './lib/pixel'
 import { modoTeste, sendLead } from './lib/submit'
-import { firstName, isValidName, isValidPhone, maskPhone } from './lib/utils'
+import { cx, firstName, isValidName, isValidPhone, maskPhone } from './lib/utils'
 
 /**
  * Mecanica estilo Typeform: uma pergunta por vez, sempre no mesmo lugar da tela.
@@ -130,6 +130,73 @@ export default function App() {
     setTeste(modoTeste())
   }, [])
 
+  // Passo que nao cabe na tela do celular continua rolavel, mas a barra de
+  // rolagem e escondida de proposito, entao nada avisava. Sem aviso, tela
+  // rolavel e lida como tela QUEBRADA: foi o que aconteceu no iPhone, com o
+  // campo de WhatsApp cortado ao meio e o botao fora de vista.
+  const areaRolagem = useRef<HTMLDivElement>(null)
+  const [sobra, setSobra] = useState(false)
+
+  const conferirSobra = useCallback(() => {
+    const el = areaRolagem.current
+    if (!el) return
+    // 4px de folga: arredondamento de subpixel deixa 1px sobrando numa area
+    // que ja chegou no fim, e a setinha ficaria acesa pra sempre.
+    setSobra(el.scrollHeight - el.clientHeight - el.scrollTop > 4)
+  }, [])
+
+  useEffect(() => {
+    const el = areaRolagem.current
+    if (!el) return
+
+    // Observa a CAIXA (girar o aparelho, teclado do iOS abrindo) e tambem o
+    // CONTEUDO. O conteudo precisa entrar porque ele cresce sem ninguem mexer
+    // no DOM: a Lexend chega da rede depois do primeiro render e o texto
+    // reflui. Sem isso a setinha congela no valor que leu antes da fonte
+    // carregar e fica acesa numa tela que cabe inteira.
+    const ro =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(conferirSobra) : null
+
+    // O filho troca de identidade a cada passo, entao reassinar faz parte.
+    const assinar = () => {
+      if (!ro) return
+      ro.disconnect()
+      ro.observe(el)
+      for (const filho of Array.from(el.children)) ro.observe(filho)
+    }
+
+    // Troca de passo. Tem que ser observer e nao dependencia de `step`: o passo
+    // novo so entra DEPOIS que o antigo sai (AnimatePresence com mode="wait"),
+    // entao medir na hora que `step` muda le a altura do passo velho.
+    // De proposito sem `attributes`: a framer-motion mexe em transform e
+    // opacity quadro a quadro e isso viraria enxurrada de callback.
+    const mo =
+      typeof MutationObserver !== 'undefined'
+        ? new MutationObserver(() => {
+            assinar()
+            conferirSobra()
+          })
+        : null
+    mo?.observe(el, { childList: true, subtree: true, characterData: true })
+
+    assinar()
+    conferirSobra()
+
+    // A primeira medida sai com a fonte de sistema, porque a Lexend ainda esta
+    // vindo da rede. Ela e mais estreita, o texto ocupa mais linhas e a conta
+    // da sobra sai errada por ~20px. Conferir de novo quando a fonte assentar
+    // e o que impede a setinha de ficar acesa numa tela que cabe inteira.
+    const quandoAssentar = document.fonts?.ready
+    void quandoAssentar?.then(conferirSobra).catch(() => {})
+    const quadro = requestAnimationFrame(conferirSobra)
+
+    return () => {
+      cancelAnimationFrame(quadro)
+      ro?.disconnect()
+      mo?.disconnect()
+    }
+  }, [conferirSobra])
+
   return (
     <div className="relative mx-auto flex h-[100dvh] max-w-5xl flex-col overflow-hidden lg:max-w-6xl lg:flex-row lg:items-center lg:gap-8 lg:px-8">
       <Feixes />
@@ -140,9 +207,17 @@ export default function App() {
       )}
       {/* PALCO: fixo em cima no mobile, coluna esquerda no desktop */}
       <div className="shrink-0 px-3 pt-3 lg:w-[46%] lg:px-0 lg:pt-0">
-        {/* 36dvh e o teto pra lista de 6 opcoes caber inteira embaixo sem
-            cortar a ultima. Ja conferido que nenhuma cena estoura nessa altura. */}
-        <div className="h-[36dvh] min-h-[225px] lg:h-[560px]">
+        {/* 38dvh e o teto pra lista de 6 opcoes caber embaixo. NAO aumentar:
+            cada ponto daqui sai do formulario, e o passo da dor (6 opcoes) ja
+            e o mais apertado da tela.
+            Num iPhone com a barra do Safari aberta isso da ~252px, e o Palco
+            entrega ~236px pra cena depois da faixa dos indicadores. As cenas
+            foram medidas nesse teto: quem nao coubesse antes era CORTADA em
+            silencio, porque o Palco e `overflow-hidden`.
+            O piso subiu de 225 pra 240 por causa do iPhone 13 mini e afins
+            (tela de 629px): neles 38dvh fica abaixo do piso, e com 225 a cena
+            do case perdia a linha da fonte da Harvard Business Review. */}
+        <div className="h-[38dvh] min-h-[240px] lg:h-[560px]">
           <Stage
             scene={scene}
             answers={answers}
@@ -153,11 +228,16 @@ export default function App() {
       </div>
 
       {/* PERGUNTA: sempre uma so, sempre no mesmo lugar */}
-      <div className="flex min-h-0 flex-1 flex-col px-4 pb-3 pt-4 lg:pt-0">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pb-2 pt-3 lg:pb-3 lg:pt-0">
+        <div className="relative flex min-h-0 flex-1 flex-col">
         {/* `my-auto` no filho em vez de `justify-center` no pai: com
             justify-center, passo que nao cabe na tela tem o TOPO cortado e
             fica inalcancavel na rolagem. */}
-        <div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto py-1">
+        <div
+          ref={areaRolagem}
+          onScroll={conferirSobra}
+          className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto py-1"
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={concluido ? 'fim' : step}
@@ -194,7 +274,32 @@ export default function App() {
           </AnimatePresence>
         </div>
 
-        <div className="flex shrink-0 items-center justify-between gap-3 pt-2">
+        {/* Aviso de que TEM MAIS COISA EMBAIXO. A area de rolagem esconde a
+            barra (`no-scrollbar`), entao um passo mais alto que a tela nao
+            parecia rolavel, parecia CORTADO: foi assim que a tela de
+            identificacao chegou no iPhone do Renan, com o campo de WhatsApp
+            pela metade e o botao invisivel. So aparece quando sobra mesmo. */}
+        <div
+          aria-hidden="true"
+          className={cx(
+            // `lg:hidden` de proposito: no desktop o formulario cabe inteiro em
+            // todos os passos (medido em 1440x900 e 1280x720, sobra 0), entao a
+            // faixa so teria como pintar por cima do botao principal.
+            'pointer-events-none absolute inset-x-0 bottom-0 flex h-6 items-end justify-center bg-gradient-to-t from-fundo to-transparent transition-opacity duration-200 lg:hidden',
+            sobra ? 'opacity-100' : 'opacity-0',
+          )}
+        >
+          <motion.span
+            className="text-[13px] leading-none text-white/45"
+            animate={{ y: [0, 3, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity }}
+          >
+            ↓
+          </motion.span>
+        </div>
+        </div>
+
+        <div className="safe-bottom flex shrink-0 items-center justify-between gap-3 pt-2">
           {podeVoltar ? (
             <button
               type="button"
@@ -208,7 +313,7 @@ export default function App() {
           )}
           {/* Curto porque a Lexend e mais larga que a fonte anterior e a versao
               longa passou a quebrar em duas linhas em cima do botao Voltar. */}
-          <p className="safe-bottom whitespace-nowrap text-right text-[10px] leading-snug text-white/30">
+          <p className="whitespace-nowrap text-right text-[10px] leading-snug text-white/30">
             Uso só para contato comercial
           </p>
         </div>
@@ -253,18 +358,23 @@ function Passo({
       <div>
         {/* O logo substitui o eyebrow de texto. Menos uma linha na tela e
             some a repeticao do nome do produto, que ja esta no titulo. */}
-        <Logo className="mb-3 h-5" />
-        <h1 className="font-display text-[21px] font-black leading-[1.15] lg:text-3xl">
+        {/* Tudo aqui e uma casa menor no celular que no desktop: este passo e o
+            unico com titulo + subtitulo + tres campos + botao juntos, e com os
+            tamanhos antigos o botao caia fora da tela num iPhone. */}
+        <Logo className="mb-2 h-4 lg:mb-3 lg:h-5" />
+        <h1 className="font-display text-[19px] font-black leading-[1.15] lg:text-3xl">
           {SITE.headline}
         </h1>
-        <p className="mb-4 mt-2 text-[13px] leading-snug text-white/65">{SITE.sub}</p>
+        <p className="mb-3 mt-1.5 text-[12.5px] leading-snug text-white/65 lg:mb-4 lg:mt-2 lg:text-[13px]">
+          {SITE.sub}
+        </p>
 
         {/* Nome e WhatsApp continuam juntos: sao um bloco so ("como te chamo e
             onde falo com voce"), e separar adiaria a primeira cena. */}
         <Label hint="É por onde a gente continua a conversa depois">
           Seu nome, sua empresa e seu WhatsApp
         </Label>
-        <div className="space-y-2">
+        <div className="space-y-1.5 lg:space-y-2">
           <TextField
             value={answers.nome}
             onChange={(v) => set('nome', v)}
@@ -302,7 +412,7 @@ function Passo({
             </p>
           )}
         </div>
-        <div className="mt-3">
+        <div className="mt-2.5 lg:mt-3">
           <PrimaryButton onClick={avancarStep0}>Destravar a minha demo</PrimaryButton>
         </div>
       </div>

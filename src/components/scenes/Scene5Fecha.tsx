@@ -24,14 +24,17 @@ export default function Scene5Fecha({
   const primeiro = firstName(nome) || 'você'
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-5 text-center">
+    /* `min-h-full`: com `h-full`, o `justify-center` empurrava o circulo do
+       check pra fora do topo do Palco e ele aparecia cortado no meio no
+       iPhone. */
+    <div className="flex min-h-full flex-col items-center justify-center px-5 text-center">
       <motion.div
         initial={{ scale: 0.4, opacity: 0 }}
         animate={active ? { scale: 1, opacity: 1 } : {}}
         transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-        className="relative mb-4"
+        className="relative mb-3 lg:mb-4"
       >
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-grad">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-grad lg:h-16 lg:w-16">
           {enviando ? (
             <motion.span
               className="block h-7 w-7 rounded-full border-[3px] border-roxo-950/25 border-t-roxo-950"
@@ -67,7 +70,7 @@ export default function Scene5Fecha({
         initial={{ opacity: 0, y: 12 }}
         animate={active ? { opacity: 1, y: 0 } : {}}
         transition={{ delay: 0.3 }}
-        className="font-display text-xl font-black leading-tight"
+        className="font-display text-[17px] font-black leading-tight lg:text-xl"
       >
         {enviando ? (
           'Montando a sua demo...'
@@ -82,7 +85,7 @@ export default function Scene5Fecha({
         initial={{ opacity: 0, y: 12 }}
         animate={active ? { opacity: 1, y: 0 } : {}}
         transition={{ delay: 0.55 }}
-        className="mt-2 max-w-xs text-[13px] leading-snug text-white/75"
+        className="mt-1.5 max-w-xs text-[12px] leading-snug text-white/75 lg:mt-2 lg:text-[13px]"
       >
         {whatsappEnviado
           ? 'Você vai receber no WhatsApp o mesmo tipo de atendimento que acabou de ver aqui. Se fizer sentido, a gente marca uma demonstração de 20 minutos.'
@@ -93,7 +96,7 @@ export default function Scene5Fecha({
         initial={{ opacity: 0 }}
         animate={active && !enviando && whatsappEnviado ? { opacity: 1 } : {}}
         transition={{ delay: 0.9 }}
-        className="mt-4 flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5"
+        className="mt-2.5 flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 lg:mt-4"
       >
         <motion.span
           className="h-1.5 w-1.5 rounded-full bg-emerald-400"
